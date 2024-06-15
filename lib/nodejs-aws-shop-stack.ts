@@ -7,18 +7,37 @@ export class NodejsAwsShopStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
+    // health handler
     const health = new lambda.Function(this, "HealthHandler", {
       runtime: lambda.Runtime.NODEJS_20_X,
-      code: lambda.Code.fromAsset("lambda"),
+      code: lambda.Code.fromAsset("lambda/health"),
       handler: "health.handler",
     });
 
-    const api = new apigateway.LambdaRestApi(this, "HealthApi", {
-      handler: health,
-      proxy: false,
-    });
+    // all products list handler
+    const getProductsList = new lambda.Function(
+      this,
+      "AllProductsListHandler",
+      {
+        runtime: lambda.Runtime.NODEJS_20_X,
+        code: lambda.Code.fromAsset("lambda/getProductsList"),
+        handler: "getProductsList.handler",
+      }
+    );
 
+    // API Gateaway
+    const api = new apigateway.RestApi(this, "Api");
+
+    // health handler with API gateaway integration
     const healthResource = api.root.addResource("health");
-    healthResource.addMethod("GET");
+    const healthIntegration = new apigateway.LambdaIntegration(health);
+    healthResource.addMethod("GET", healthIntegration);
+
+    // all products list handler with API gateaway integration
+    const getProductsListResource = api.root.addResource("products");
+    const getProductsListIntegration = new apigateway.LambdaIntegration(
+      getProductsList
+    );
+    getProductsListResource.addMethod("GET", getProductsListIntegration);
   }
 }
