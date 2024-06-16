@@ -26,10 +26,10 @@ export class NodejsAwsShopStack extends cdk.Stack {
     );
 
     // single product handler
-    const getSingleProduct = new lambda.Function(this, "SingleProductHandler", {
+    const getProductsById = new lambda.Function(this, "SingleProductHandler", {
       runtime: lambda.Runtime.NODEJS_20_X,
-      code: lambda.Code.fromAsset("lambda/getSingleProduct"),
-      handler: "getSingleProduct.handler",
+      code: lambda.Code.fromAsset("lambda/getProductsById"),
+      handler: "getProductsById.handler",
     });
 
     // API Gateaway
@@ -51,7 +51,7 @@ export class NodejsAwsShopStack extends cdk.Stack {
     const getSingleProductResource =
       getProductsListResource.addResource("{productId}");
     const getSingleProductIntegration = new apigateway.LambdaIntegration(
-      getSingleProduct
+      getProductsById
     );
     getSingleProductResource.addMethod("GET", getSingleProductIntegration);
   }
