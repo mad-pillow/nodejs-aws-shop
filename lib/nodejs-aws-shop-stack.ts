@@ -1,9 +1,9 @@
 import * as cdk from "aws-cdk-lib";
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
 import { Construct } from "constructs";
-import { checkHealth } from "../product-service/lambda/functions/checkHealth";
-import { getProductsById } from "../product-service/lambda/functions/getProductsById";
-import { getProductsList } from "../product-service/lambda/functions/getProductsList";
+import { checkHealth } from "../product-service/lambda/functions/checkHealth/checkHealth";
+import { getProductsById } from "../product-service/lambda/functions/getProductsById/getProductsById";
+import { getProductsList } from "../product-service/lambda/functions/getProductsList/getProductsList";
 
 export class NodejsAwsShopStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {

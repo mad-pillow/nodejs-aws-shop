@@ -8,6 +8,6 @@ export function getProductsById(scope: Construct) {
     code: lambda.Code.fromAsset(
       path.join(__dirname, "../../handlers/getProductsById")
     ),
-    handler: "index.handler",
+    handler: "getProductsById.handler",
   });
 }

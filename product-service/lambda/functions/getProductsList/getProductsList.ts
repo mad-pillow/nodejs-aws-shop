@@ -2,12 +2,12 @@ import * as lambda from "aws-cdk-lib/aws-lambda";
 import { Construct } from "constructs";
 import path = require("path");
 
-export function checkHealth(scope: Construct) {
-  return new lambda.Function(scope, "CheckHealth", {
+export function getProductsList(scope: Construct) {
+  return new lambda.Function(scope, "GetProductsList", {
     runtime: lambda.Runtime.NODEJS_20_X,
     code: lambda.Code.fromAsset(
-      path.join(__dirname, "../../handlers/checkHealth")
+      path.join(__dirname, "../../handlers/getProductsList")
     ),
-    handler: "index.handler",
+    handler: "getProductsList.handler",
   });
 }
