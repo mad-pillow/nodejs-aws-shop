@@ -42,7 +42,11 @@ const PRODUCTS = [
 exports.handler = async function (): Promise<APIGatewayProxyResult> {
   return {
     statusCode: 200,
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "https://d1cyowfcgdatfw.cloudfront.net",
+      "Access-Control-Allow-Methods": "OPTIONS,GET",
+    },
     body: JSON.stringify(PRODUCTS),
   };
 };

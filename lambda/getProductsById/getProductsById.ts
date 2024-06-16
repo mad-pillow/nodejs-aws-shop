@@ -44,10 +44,16 @@ exports.handler = async function (
 ): Promise<APIGatewayProxyResult> {
   const productId = event?.pathParameters?.productId;
 
+  const headers = {
+    "Content-Type": "application/json",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "*",
+  };
+
   if (!productId) {
     return {
       statusCode: 400,
-      headers: { "Content-Type": "application/json" },
+      headers,
       body: JSON.stringify({ message: "There is no product Id passed" }),
     };
   }
@@ -57,14 +63,14 @@ exports.handler = async function (
   if (!product) {
     return {
       statusCode: 404,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ message: "There is no product Id passed" }),
+      headers,
+      body: JSON.stringify({ message: "This product Id was not found" }),
     };
   }
 
   return {
     statusCode: 200,
-    headers: { "Content-Type": "application/json" },
+    headers,
     body: JSON.stringify(product),
   };
 };
