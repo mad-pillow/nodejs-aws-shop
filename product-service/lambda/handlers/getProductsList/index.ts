@@ -44,7 +44,7 @@ exports.handler = async function (): Promise<APIGatewayProxyResult> {
     statusCode: 200,
     headers: {
       "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "https://d1cyowfcgdatfw.cloudfront.net",
+      "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "OPTIONS,GET",
     },
     body: JSON.stringify(PRODUCTS),

@@ -47,14 +47,14 @@ exports.handler = async function (
   const headers = {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "*",
+    "Access-Control-Allow-Methods": "OPTIONS,GET",
   };
 
   if (!productId) {
     return {
-      statusCode: 400,
+      statusCode: 500,
       headers,
-      body: JSON.stringify({ message: "There is no product Id passed" }),
+      body: JSON.stringify({ message: "Server Error" }),
     };
   }
 

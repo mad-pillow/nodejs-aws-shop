@@ -7,7 +7,11 @@ exports.handler = async function (
 
   return {
     statusCode: 200,
-    headers: { "Content-Type": "text/plain; charset=utf-8" },
+    headers: {
+      "Content-Type": "text/plain; charset=utf-8",
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "OPTIONS,GET",
+    },
     body: "All systems go! 🚀",
   };
 };

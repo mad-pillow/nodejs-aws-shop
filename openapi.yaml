@@ -1,0 +1,123 @@
+openapi: 3.0.3
+info:
+  title: AWS Cloud Developer App
+  version: 1.0.0
+servers:
+  - url: https://1uakb21nm6.execute-api.us-east-1.amazonaws.com/prod
+tags:
+  - name: General
+    description: Check Health
+  - name: Products
+    description: Get products
+paths:
+  /health:
+    get:
+      tags:
+        - General
+      summary: Check App Health
+      description: Just run query
+      operationId: checkHealth
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            text/plain:
+              schema:
+                $ref: '#/components/schemas/Health'
+  /products:
+    get:
+      tags:
+        - Products
+      summary: Get products
+      description: Get all available products
+      operationId: getProductsList
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+  /products/{productId}:
+    get:
+      tags:
+        - Products
+      summary: Get product by id
+      description: Get product by id
+      operationId: getProductsById
+      parameters:
+        - name: productId
+          in: path
+          description: Product Id to filter by
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  id: w34t
+                  title: 'The product'
+                  description: 'The description'
+                  price: 9
+                items:
+                  $ref: '#/components/schemas/Product'
+        '404':
+          description: This product Id was not found 
+          content:
+            application/json:
+              schema:
+                type: object
+                example: 
+                  message: 'This product Id was not found'
+                items:
+                  $ref: '#/components/schemas/NotFoundError'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                example: 
+                  message: Server Error
+                items:
+                  $ref: '#/components/schemas/ServerError'
+components:
+  schemas:
+    Product:
+      type: object
+      properties:
+        id:
+          type: string
+          example: '1abe'
+        price:
+          type: integer
+          format: int64
+          example: 19
+        description:
+          type: string
+          example: 'The description'
+        title:
+          type: string
+          example: 'The product'
+    Health:
+      type: string
+      example: 'All systems go! 🚀'
+    NotFoundError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: 'Not Found Error'
+    ServerError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: 'Server Error'
