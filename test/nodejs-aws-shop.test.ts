@@ -11,7 +11,7 @@ test("Lambda Functions Created", () => {
 
   template.hasResourceProperties("AWS::Lambda::Function", {
     Runtime: "nodejs20.x",
-    Handler: "health.handler",
+    Handler: "checkHealth.handler",
   });
 
   template.hasResourceProperties("AWS::Lambda::Function", {
