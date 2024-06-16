@@ -1,4 +1,4 @@
-import { APIGatewayProxyResult } from "aws-lambda";
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 
 const PRODUCTS = [
   {
@@ -39,10 +39,32 @@ const PRODUCTS = [
   },
 ];
 
-exports.handler = async function (): Promise<APIGatewayProxyResult> {
+exports.handler = async function (
+  event: APIGatewayProxyEvent
+): Promise<APIGatewayProxyResult> {
+  const productId = event?.pathParameters?.productId;
+
+  if (!productId) {
+    return {
+      statusCode: 400,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: "There is no product Id passed" }),
+    };
+  }
+
+  const product = PRODUCTS.find((product) => product.id === productId);
+
+  if (!product) {
+    return {
+      statusCode: 404,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: "There is no product Id passed" }),
+    };
+  }
+
   return {
     statusCode: 200,
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(PRODUCTS),
+    body: JSON.stringify(product),
   };
 };
