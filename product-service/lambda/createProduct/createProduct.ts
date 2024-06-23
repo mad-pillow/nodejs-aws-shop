@@ -39,16 +39,21 @@ exports.handler = async function (
 
   try {
     await dynamodb
-      .put({
-        TableName: "products",
-        Item: productItem,
-      })
-      .promise();
-
-    await dynamodb
-      .put({
-        TableName: "stocks",
-        Item: stockItem,
+      .transactWrite({
+        TransactItems: [
+          {
+            Put: {
+              TableName: "products",
+              Item: productItem,
+            },
+          },
+          {
+            Put: {
+              TableName: "stocks",
+              Item: stockItem,
+            },
+          },
+        ],
       })
       .promise();
 
