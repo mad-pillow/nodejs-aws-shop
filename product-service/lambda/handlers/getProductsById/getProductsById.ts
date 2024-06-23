@@ -15,15 +15,7 @@ exports.handler = async function (
   };
 
   try {
-    const productId = event.pathParameters?.productId;
-
-    if (!productId) {
-      return {
-        statusCode: 400,
-        headers,
-        body: JSON.stringify({ message: "Wrong product Id" }),
-      };
-    }
+    const productId = event.pathParameters!.productId!;
 
     const { Item: product } = await dynamodb
       .get({
