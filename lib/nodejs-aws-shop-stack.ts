@@ -47,7 +47,13 @@ export class NodejsAwsShopStack extends cdk.Stack {
     productsTable.grantWriteData(createProductLambda);
 
     // API Gateaway
-    const api = new apigateway.RestApi(this, "Api");
+    const api = new apigateway.RestApi(this, "Api", {
+      defaultCorsPreflightOptions: {
+        allowOrigins: apigateway.Cors.ALL_ORIGINS,
+        allowMethods: apigateway.Cors.ALL_METHODS,
+        allowHeaders: apigateway.Cors.DEFAULT_HEADERS,
+      },
+    });
 
     // health handler with API gateaway integration
     const healthResource = api.root.addResource("health");
