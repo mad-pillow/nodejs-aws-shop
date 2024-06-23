@@ -1,22 +1,24 @@
 import * as AWS from "aws-sdk";
-
 import { products, stocks } from "./defaultDBData";
-import { SeedDynamoDBProps } from "./types";
+import { SeedDynamoDBProps, Product } from "./types";
 
 const documentClient = new AWS.DynamoDB.DocumentClient({ region: "us-east-1" });
 
 async function seedDynamoDBTable({ tableName, items }: SeedDynamoDBProps) {
-  for (const item of items) {
+  for (let i = 0; i < items.length; i++) {
     const params = {
       TableName: tableName,
-      Item: item,
+      Item: items[i],
     };
 
     try {
       await documentClient.put(params).promise();
-      console.log(`Table [${tableName}] Item [${item.id}] inserted`);
+      console.log(`Table [${tableName}] Item [${i + 1}] inserted`);
     } catch (error) {
-      console.error(`Error inserting item ${item.id}:`, error);
+      console.error(
+        `Error inserting item [${i + 1}] of table [${tableName}]:`,
+        error
+      );
     }
   }
 }

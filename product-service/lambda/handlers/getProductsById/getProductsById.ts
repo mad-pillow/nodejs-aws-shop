@@ -15,13 +15,13 @@ exports.handler = async function (
   };
 
   try {
-    const productId = event?.pathParameters?.productId;
+    const productId = event.pathParameters?.productId;
 
     if (!productId) {
       return {
-        statusCode: 500,
+        statusCode: 400,
         headers,
-        body: JSON.stringify({ message: "Server Error" }),
+        body: JSON.stringify({ message: "Wrong product Id" }),
       };
     }
 
@@ -40,10 +40,22 @@ exports.handler = async function (
       };
     }
 
+    const { Item: stock } = await dynamodb
+      .get({
+        TableName: "stocks",
+        Key: { product_id: productId },
+      })
+      .promise();
+
+    const joinedProduct = {
+      ...product,
+      count: stock?.count || 0,
+    };
+
     return {
       statusCode: 200,
       headers,
-      body: JSON.stringify(product),
+      body: JSON.stringify(joinedProduct),
     };
   } catch (error) {
     console.error("Error fetching data", error);
