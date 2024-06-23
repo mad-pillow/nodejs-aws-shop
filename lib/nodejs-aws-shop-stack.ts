@@ -81,6 +81,27 @@ export class NodejsAwsShopStack extends cdk.Stack {
     const createProductIntegration = new apigateway.LambdaIntegration(
       createProductLambda
     );
-    getProductsListResource.addMethod("POST", createProductIntegration);
+    const createProductModel = api.addModel("CreateProductModel", {
+      contentType: "application/json",
+      modelName: "CreateProductModel",
+      schema: {
+        type: apigateway.JsonSchemaType.OBJECT,
+        properties: {
+          title: { type: apigateway.JsonSchemaType.STRING, minLength: 1 },
+          description: { type: apigateway.JsonSchemaType.STRING, minLength: 1 },
+          price: { type: apigateway.JsonSchemaType.NUMBER, minimum: 0.01 },
+          count: { type: apigateway.JsonSchemaType.NUMBER, minimum: 0 },
+        },
+        required: ["title", "description", "price", "count"],
+      },
+    });
+    getProductsListResource.addMethod("POST", createProductIntegration, {
+      requestValidatorOptions: {
+        validateRequestBody: true,
+      },
+      requestModels: {
+        "application/json": createProductModel,
+      },
+    });
   }
 }
