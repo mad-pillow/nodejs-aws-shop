@@ -1,76 +1,57 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
+import * as AWS from "aws-sdk";
 
-const PRODUCTS = [
-  {
-    description: "A crunchy snack for those who carrot all about their health.",
-    id: "7567ec4b-b10c-48c5-9345-fc73c48a80aa",
-    price: 2,
-    title: "Carrot Crunch",
-  },
-  {
-    description: "The king of fruits, ready to rule your taste buds.",
-    id: "7567ec4b-b10c-48c5-9345-fc73c48a80a1",
-    price: 3,
-    title: "Mango Majesty",
-  },
-  {
-    description: "A banana a day keeps the hunger at bay.",
-    id: "7567ec4b-b10c-48c5-9345-fc73c48a80a3",
-    price: 1,
-    title: "Banana Bonanza",
-  },
-  {
-    description: "When life gives you lemons, make lemonade.",
-    id: "7567ec4b-b10c-48c5-9345-fc73348a80a1",
-    price: 4,
-    title: "Lemon Laughs",
-  },
-  {
-    description: "Avocados from Mexico, the superfood that guacs.",
-    id: "7567ec4b-b10c-48c5-9445-fc73c48a80a2",
-    price: 5,
-    title: "Avocado Adventure",
-  },
-  {
-    description: "Lettuce entertain you with the best salads ever.",
-    id: "7567ec4b-b10c-45c5-9345-fc73c48a80a1",
-    price: 2,
-    title: "Lettuce Laughs",
-  },
-];
+const dynamodb = new AWS.DynamoDB.DocumentClient({
+  region: "us-east-1",
+});
 
 exports.handler = async function (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> {
-  const productId = event?.pathParameters?.productId;
-
   const headers = {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "OPTIONS,GET",
   };
 
-  if (!productId) {
+  try {
+    const productId = event?.pathParameters?.productId;
+
+    if (!productId) {
+      return {
+        statusCode: 500,
+        headers,
+        body: JSON.stringify({ message: "Server Error" }),
+      };
+    }
+
+    const { Item: product } = await dynamodb
+      .get({
+        TableName: "products",
+        Key: { id: productId },
+      })
+      .promise();
+
+    if (!product) {
+      return {
+        statusCode: 404,
+        headers,
+        body: JSON.stringify({ message: "This product Id was not found" }),
+      };
+    }
+
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify(product),
+    };
+  } catch (error) {
+    console.error("Error fetching data", error);
+
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ message: "Server Error" }),
+      body: JSON.stringify({ message: "Failed to fetch data" }),
     };
   }
-
-  const product = PRODUCTS.find((product) => product.id === productId);
-
-  if (!product) {
-    return {
-      statusCode: 404,
-      headers,
-      body: JSON.stringify({ message: "This product Id was not found" }),
-    };
-  }
-
-  return {
-    statusCode: 200,
-    headers,
-    body: JSON.stringify(product),
-  };
 };

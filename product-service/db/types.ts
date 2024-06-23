@@ -15,3 +15,7 @@ export type SeedDynamoDBProps = {
   tableName: string;
   items: Product[] | Stock[];
 };
+
+export type DynamoDBServiceProps = {
+  tableName: string;
+};
