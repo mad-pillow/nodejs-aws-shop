@@ -4,7 +4,7 @@ import path = require("path");
 
 export function getProductsList(scope: Construct) {
   return new lambda.Function(scope, "GetProductsList", {
-    runtime: lambda.Runtime.NODEJS_20_X,
+    runtime: lambda.Runtime.NODEJS_16_X,
     code: lambda.Code.fromAsset(
       path.join(__dirname, "../../handlers/getProductsList")
     ),
