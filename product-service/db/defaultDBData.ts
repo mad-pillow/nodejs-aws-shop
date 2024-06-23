@@ -75,47 +75,38 @@ export const products: Product[] = [
 export const stocks: Stock[] = [
   {
     count: 20,
-    id: "b0b5c9d9-7b1f-4e3f-8b3d-3a0c1b3f4c1e",
     product_id: "d1bff857-f6ff-48f2-8fc8-d47fcd3e34cb",
   },
   {
     count: 15,
-    id: "b0b5c9d9-7b1f-4e3f-8b3d-3a0c1b3f4c1f",
     product_id: "af4b9141-84c0-41e5-b54e-0b70edb4d4cf",
   },
   {
     count: 10,
-    id: "b0b5c9d9-7b1f-4e3f-8b3d-3a0c1b3f4c20",
     product_id: "c7fa9df2-5fd4-4b5c-80bb-6d8f93b9b97a",
   },
   {
     count: 5,
-    id: "b0b5c9d9-7b1f-4e3f-8b3d-3a0c1b3f4c21",
     product_id: "e5c7e6b1-3745-4b36-85db-45f0e5724c50",
   },
   {
     count: 8,
-    id: "b0b5c9d9-7b1f-4e3f-8b3d-3a0c1b3f4c22",
     product_id: "4f93d837-cf4b-498a-97e1-c8fda5c6c2ec",
   },
   {
     count: 12,
-    id: "b0b5c9d9-7b1f-4e3f-8b3d-3a0c1b3f4c23",
     product_id: "fa9a5c35-7c6a-40b6-b84d-0a29e4c95871",
   },
   {
     count: 3,
-    id: "b0b5c9d9-7b1f-4e3f-8b3d-3a0c1b3f4c24",
     product_id: "f42c4997-e593-4647-8c10-dcaea79520ff",
   },
   {
     count: 7,
-    id: "b0b5c9d9-7b1f-4e3f-8b3d-3a0c1b3f4c25",
     product_id: "949d914b-d6e1-4dbe-a0c6-cb1e0d05b7a1",
   },
   {
     count: 6,
-    id: "b0b5c9d9-7b1f-4e3f-8b3d-3a0c1b3f4c26",
     product_id: "b6d4e72a-f8d8-4b5c-8141-ec768a6f4b68",
   },
 ];
