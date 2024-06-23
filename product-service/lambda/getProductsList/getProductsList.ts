@@ -1,11 +1,15 @@
-import { APIGatewayProxyResult } from "aws-lambda";
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import * as AWS from "aws-sdk";
 
 const dynamodb = new AWS.DynamoDB.DocumentClient({
   region: "us-east-1",
 });
 
-exports.handler = async function (): Promise<APIGatewayProxyResult> {
+exports.handler = async function (
+  event: APIGatewayProxyEvent
+): Promise<APIGatewayProxyResult> {
+  console.log("Received event:", JSON.stringify(event, null, 2));
+
   const headers = {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*",

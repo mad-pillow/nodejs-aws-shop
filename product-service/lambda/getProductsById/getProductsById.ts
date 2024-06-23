@@ -8,6 +8,8 @@ const dynamodb = new AWS.DynamoDB.DocumentClient({
 exports.handler = async function (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> {
+  console.log("Received event:", JSON.stringify(event, null, 2));
+
   const headers = {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*",
