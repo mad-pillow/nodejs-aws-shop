@@ -1,5 +1,3 @@
-import { stocks } from "./../../../db/defaultDBData";
-import { products } from "./../../../../cdk.out/asset.a5c048ab9bb7eeab363b61c53b717fd41bf532242cd16fa871dae63fcba3d410/getProductsList";
 import { APIGatewayProxyResult } from "aws-lambda";
 import * as AWS from "aws-sdk";
 

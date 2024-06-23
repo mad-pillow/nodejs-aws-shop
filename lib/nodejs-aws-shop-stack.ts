@@ -2,33 +2,49 @@ import * as cdk from "aws-cdk-lib";
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import { Construct } from "constructs";
-import { checkHealth } from "../product-service/lambda/functions/checkHealth/checkHealth";
-import { getProductsById } from "../product-service/lambda/functions/getProductsById/getProductsById";
-import { getProductsList } from "../product-service/lambda/functions/getProductsList/getProductsList";
+import { createLambda } from "../product-service/utils/createLambda";
 
 export class NodejsAwsShopStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
+    // Get existing tables
     const productsTable = dynamodb.Table.fromTableName(
       this,
       "ProductsTable",
       "products"
     );
-
     const stocksTable = dynamodb.Table.fromTableName(
       this,
       "StocksTable",
       "stocks"
     );
 
-    const getProductsByIdLambda = getProductsById(this);
-    const getProductsListLambda = getProductsList(this);
+    // Create lambdas
+    const getProductsByIdLambda = createLambda(
+      this,
+      "GetProductsById",
+      "getProductsById"
+    );
+    const getProductsListLambda = createLambda(
+      this,
+      "GetProductsList",
+      "getProductsList"
+    );
+    const createProductLambda = createLambda(
+      this,
+      "CreateProduct",
+      "createProduct"
+    );
 
+    // Grant read access to tables
     productsTable.grantReadData(getProductsByIdLambda);
     stocksTable.grantReadData(getProductsByIdLambda);
     productsTable.grantReadData(getProductsListLambda);
     stocksTable.grantReadData(getProductsListLambda);
+
+    // Grant write access to tables
+    productsTable.grantWriteData(createProductLambda);
 
     // API Gateaway
     const api = new apigateway.RestApi(this, "Api");
@@ -36,7 +52,7 @@ export class NodejsAwsShopStack extends cdk.Stack {
     // health handler with API gateaway integration
     const healthResource = api.root.addResource("health");
     const healthIntegration = new apigateway.LambdaIntegration(
-      checkHealth(this)
+      createLambda(this, "CheckHealth", "checkHealth")
     );
     healthResource.addMethod("GET", healthIntegration);
 
@@ -54,5 +70,11 @@ export class NodejsAwsShopStack extends cdk.Stack {
       getProductsByIdLambda
     );
     getSingleProductResource.addMethod("GET", getSingleProductIntegration);
+
+    // create product handler with API gateaway integration
+    const createProductIntegration = new apigateway.LambdaIntegration(
+      createProductLambda
+    );
+    getProductsListResource.addMethod("POST", createProductIntegration);
   }
 }
