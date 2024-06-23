@@ -16,9 +16,11 @@ async function clearDynamoDBTable(tableName: string) {
       return;
     }
 
+    const primaryKey = tableName === "stocks" ? "product_id" : "id";
+
     const deleteRequests = items.map((item) => ({
       DeleteRequest: {
-        Key: { id: item.id },
+        Key: { [primaryKey]: item[primaryKey] },
       },
     }));
 
