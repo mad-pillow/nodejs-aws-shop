@@ -14,80 +14,140 @@ paths:
     get:
       tags:
         - General
-      summary: Check App Health
-      description: Just run query
+      summary: "Check App Health"
+      description: "Just run query"
       operationId: checkHealth
       responses:
-        '200':
-          description: Successful operation
+        "200":
+          description: "Successful operation"
           content:
             text/plain:
               schema:
-                $ref: '#/components/schemas/Health'
+                $ref: "#/components/schemas/Health"
   /products:
     get:
       tags:
         - Products
-      summary: Get products
-      description: Get all available products
+      summary: "Get products"
+      description: "Get all available products"
       operationId: getProductsList
       responses:
-        '200':
-          description: successful operation
+        "200":
+          description: "Successful operation"
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Product'
-  /products/{productId}:
-    get:
-      tags:
-        - Products
-      summary: Get product by id
-      description: Get product by id
-      operationId: getProductsById
-      parameters:
-        - name: productId
-          in: path
-          description: Product Id to filter by
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: successful operation
+                  $ref: "#/components/schemas/Product"
+        "500":
+          description: "Server Error"
           content:
             application/json:
               schema:
                 type: object
                 example:
-                  id: w34t
-                  title: 'The product'
-                  description: 'The description'
+                  message: "Failed to fetch data"
+                items:
+                  $ref: "#/components/schemas/ServerError"
+    post:
+      tags:
+        - Products
+      summary: "Create new products"
+      description: "Create a new product"
+      operationId: createProduct
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              example:
+                id: "3316111c-0e1c-4b11-9d72-178b795bf5d1"
+                title: "The new product"
+                description: "The new product description"
+                count: 10
+                price: 5
+              items:
+                $ref: "#/components/schemas/Product"
+      responses:
+        "201":
+          description: "Created"
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: "Product created"
+        "400":
+          description: "Bad Request"
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: "Price must be a number greater than or equal to 0.01"
+                items:
+                  $ref: "#/components/schemas/BadRequestError"
+        "500":
+          description: "Server Error"
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: "Failed to create an item"
+                items:
+                  $ref: "#/components/schemas/ServerError"
+  /products/{productId}:
+    get:
+      tags:
+        - Products
+      summary: "Get product by id"
+      description: "Get product by id"
+      operationId: getProductsById
+      parameters:
+        - name: productId
+          in: path
+          description: "Product Id to filter by"
+          required: true
+          default: "af4b9141-84c0-41e5-b54e-0b70edb4d4cf"
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "Successful operation"
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  id: "3316111c-0e1c-4b11-9d72-178b795bf5d1"
+                  title: "The product"
+                  description: "The description"
+                  count: 1
                   price: 9
                 items:
-                  $ref: '#/components/schemas/Product'
-        '404':
-          description: This product Id was not found 
+                  $ref: "#/components/schemas/Product"
+        "404":
+          description: "This product Id was not found"
           content:
             application/json:
               schema:
                 type: object
-                example: 
-                  message: 'This product Id was not found'
+                example:
+                  message: "This product Id was not found"
                 items:
-                  $ref: '#/components/schemas/NotFoundError'
-        '500':
-          description: Server Error
+                  $ref: "#/components/schemas/NotFoundError"
+        "500":
+          description: "Server Error"
           content:
             application/json:
               schema:
                 type: object
-                example: 
-                  message: Server Error
+                example:
+                  message: "Failed to fetch data"
                 items:
-                  $ref: '#/components/schemas/ServerError'
+                  $ref: "#/components/schemas/ServerError"
 components:
   schemas:
     Product:
@@ -95,29 +155,39 @@ components:
       properties:
         id:
           type: string
-          example: '1abe'
+          example: "3316111c-0e1c-4b11-9d72-178b795bf5d1"
         price:
           type: integer
           format: int64
           example: 19
+        count:
+          type: integer
+          format: int64
+          example: 1
         description:
           type: string
-          example: 'The description'
+          example: "The description"
         title:
           type: string
-          example: 'The product'
+          example: "The product"
     Health:
       type: string
-      example: 'All systems go! 🚀'
+      example: "All systems go! 🚀"
+    BadRequestError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Bad Request Error"
     NotFoundError:
       type: object
       properties:
         message:
           type: string
-          example: 'Not Found Error'
+          example: "Not Found Error"
     ServerError:
       type: object
       properties:
         message:
           type: string
-          example: 'Server Error'
+          example: "Server Error"

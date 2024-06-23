@@ -23,13 +23,55 @@ exports.handler = async function (
     };
   }
 
-  const { id, count, ...newProductData } = JSON.parse(event.body);
+  const { id, count, price, title, description } = JSON.parse(event.body);
+
+  if (typeof title !== "string" || title.length === 0) {
+    return {
+      statusCode: 400,
+      headers,
+      body: JSON.stringify({
+        message: "Title is required and cannot be empty string",
+      }),
+    };
+  }
+
+  if (typeof description !== "string" || description.length === 0) {
+    return {
+      statusCode: 400,
+      headers,
+      body: JSON.stringify({
+        message: "Description is required and cannot be empty string",
+      }),
+    };
+  }
+
+  if (typeof price !== "number" || price < 0.01) {
+    return {
+      statusCode: 400,
+      headers,
+      body: JSON.stringify({
+        message: "Price must be a number greater than or equal to 0.01",
+      }),
+    };
+  }
+
+  if (!Number.isInteger(count) || count < 0) {
+    return {
+      statusCode: 400,
+      headers,
+      body: JSON.stringify({
+        message: "Count must be an integer greater than or equal to 0",
+      }),
+    };
+  }
 
   const productId = id || crypto.randomUUID();
 
   const productItem = {
     id: productId,
-    ...newProductData,
+    title,
+    description,
+    price,
   };
 
   const stockItem = {
