@@ -63,19 +63,18 @@ export class NodejsAwsShopStack extends cdk.Stack {
     healthResource.addMethod("GET", healthIntegration);
 
     // all products list handler with API gateaway integration
-    const getProductsListResource = api.root.addResource("products");
+    const productsResource = api.root.addResource("products");
     const getProductsListIntegration = new apigateway.LambdaIntegration(
       getProductsListLambda
     );
-    getProductsListResource.addMethod("GET", getProductsListIntegration);
+    productsResource.addMethod("GET", getProductsListIntegration);
 
     // single product handler with API gateaway integration
-    const getSingleProductResource =
-      getProductsListResource.addResource("{productId}");
+    const productResource = productsResource.addResource("{productId}");
     const getSingleProductIntegration = new apigateway.LambdaIntegration(
       getProductsByIdLambda
     );
-    getSingleProductResource.addMethod("GET", getSingleProductIntegration);
+    productResource.addMethod("GET", getSingleProductIntegration);
 
     // create product handler with API gateaway integration
     const createProductIntegration = new apigateway.LambdaIntegration(
@@ -95,7 +94,7 @@ export class NodejsAwsShopStack extends cdk.Stack {
         required: ["title", "description", "price", "count"],
       },
     });
-    getProductsListResource.addMethod("POST", createProductIntegration, {
+    productsResource.addMethod("POST", createProductIntegration, {
       requestValidatorOptions: {
         validateRequestBody: true,
       },
