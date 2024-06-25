@@ -20,21 +20,30 @@ export class NodejsAwsShopStack extends cdk.Stack {
       "stocks"
     );
 
+    // prepare environment variables
+    const environment = {
+      PRODUCTS_TABLE_NAME: productsTable.tableName,
+      STOCKS_TABLE_NAME: stocksTable.tableName,
+    };
+
     // Create lambdas
     const getProductsByIdLambda = createLambda(
       this,
       "GetProductsById",
-      "getProductsById"
+      "getProductsById",
+      environment
     );
     const getProductsListLambda = createLambda(
       this,
       "GetProductsList",
-      "getProductsList"
+      "getProductsList",
+      environment
     );
     const createProductLambda = createLambda(
       this,
       "CreateProduct",
-      "createProduct"
+      "createProduct",
+      environment
     );
 
     // Grant read access to tables

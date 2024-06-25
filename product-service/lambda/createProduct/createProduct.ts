@@ -11,6 +11,17 @@ exports.handler = async function (
 ): Promise<APIGatewayProxyResult> {
   console.log("Received event:", JSON.stringify(event, null, 2));
 
+  const productsTableName = process.env.PRODUCTS_TABLE_NAME || "products";
+  console.log(
+    "🚀 ~ process.env.PRODUCTS_TABLE_NAME:",
+    process.env.PRODUCTS_TABLE_NAME
+  );
+  const stocksTableName = process.env.STOCKS_TABLE_NAME || "stocks";
+  console.log(
+    "🚀 ~ process.env.STOCKS_TABLE_NAME:",
+    process.env.STOCKS_TABLE_NAME
+  );
+
   const headers = {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*",
@@ -87,13 +98,13 @@ exports.handler = async function (
         TransactItems: [
           {
             Put: {
-              TableName: "products",
+              TableName: productsTableName,
               Item: productItem,
             },
           },
           {
             Put: {
-              TableName: "stocks",
+              TableName: stocksTableName,
               Item: stockItem,
             },
           },

@@ -10,6 +10,17 @@ exports.handler = async function (
 ): Promise<APIGatewayProxyResult> {
   console.log("Received event:", JSON.stringify(event, null, 2));
 
+  const productsTableName = process.env.PRODUCTS_TABLE_NAME || "products";
+  console.log(
+    "🚀 ~ process.env.PRODUCTS_TABLE_NAME:",
+    process.env.PRODUCTS_TABLE_NAME
+  );
+  const stocksTableName = process.env.STOCKS_TABLE_NAME || "stocks";
+  console.log(
+    "🚀 ~ process.env.STOCKS_TABLE_NAME:",
+    process.env.STOCKS_TABLE_NAME
+  );
+
   const headers = {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*",
@@ -19,7 +30,7 @@ exports.handler = async function (
   try {
     const { Items: products } = await dynamodb
       .scan({
-        TableName: "products",
+        TableName: productsTableName,
       })
       .promise();
 
@@ -34,7 +45,7 @@ exports.handler = async function (
     const promisedStocks = products.map((product) => {
       return dynamodb
         .get({
-          TableName: "stocks",
+          TableName: stocksTableName,
           Key: {
             product_id: product.id,
           },
