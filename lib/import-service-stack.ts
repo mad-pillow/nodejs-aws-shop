@@ -1,7 +1,6 @@
 import * as cdk from "aws-cdk-lib";
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
 import { S3EventSource } from "aws-cdk-lib/aws-lambda-event-sources";
-import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import { Construct } from "constructs";
 import path from "path";
@@ -23,24 +22,20 @@ export class ImportServiceStack extends cdk.Stack {
       this,
       "ImportProductsFile",
       path.join(__dirname, "../import-service/lambda/importProductsFile"),
-      "importProductsFile"
+      "importProductsFile.handler"
     );
 
     // Create import file parser lambda
-    const importFileParserLambda = new NodejsFunction(
+    const importFileParserLambda = createLambda(
       this,
       "ImportFileParser",
-      {
-        entry: path.join(
-          __dirname,
-          "../import-service/lambda/importFileParser"
-        ),
-        handler: "importFileParser.handler",
-      }
+      path.join(__dirname, "../import-service/lambda/importFileParser"),
+      "importFileParser.handler"
     );
 
     // Grant permissions from the bucket
     uploadFileBucket.grantPut(importProductsFileLambda);
+    uploadFileBucket.grantRead(importFileParserLambda);
 
     // API Gateaway
     const api = new apigateway.RestApi(this, "ImportProductsApi", {

@@ -4,15 +4,15 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const s3Client = new S3Client({ region: "us-east-1" });
 
-exports.handler = async function (
+export const handler = async (
   event: APIGatewayProxyEvent
-): Promise<APIGatewayProxyResult> {
+): Promise<APIGatewayProxyResult> => {
   console.log("Received event:", JSON.stringify(event, null, 2));
 
   const headers = {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "OPTIONS,GET",
+    "Access-Control-Allow-Methods": "*",
   };
 
   const fileName = event.queryStringParameters?.name;
@@ -40,6 +40,7 @@ exports.handler = async function (
 
     return {
       statusCode: 200,
+      headers,
       body: JSON.stringify({ url: signedUrl }),
     };
   } catch (error) {

@@ -9,7 +9,7 @@ export function createLambda(
 ) {
   return new lambda.Function(scope, id, {
     runtime: lambda.Runtime.NODEJS_20_X,
-    code: lambda.Code.fromAsset(`${baseHandlerPath}/${handlerName}`),
-    handler: `${handlerName}.handler`,
+    code: lambda.Code.fromAsset(baseHandlerPath),
+    handler: handlerName,
   });
 }
