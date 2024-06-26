@@ -9,7 +9,8 @@ import path = require("path");
 export function createLambda(
   scope: Construct,
   id: string,
-  handlerName: string
+  handlerName: string,
+  environment: { [key: string]: string } = {}
 ) {
   return new lambda.Function(scope, id, {
     runtime: lambda.Runtime.NODEJS_16_X,
@@ -17,5 +18,6 @@ export function createLambda(
       path.join(__dirname, `../lambda/${handlerName}`)
     ),
     handler: `${handlerName}.handler`,
+    environment,
   });
 }
