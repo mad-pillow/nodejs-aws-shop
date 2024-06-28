@@ -2,32 +2,19 @@ openapi: 3.0.3
 info:
   title: AWS Cloud Developer App
   version: 1.0.0
-servers:
-  - url: https://1uakb21nm6.execute-api.us-east-1.amazonaws.com/prod
 tags:
-  - name: General
-    description: Check Health
-  - name: Products
+  - name: Product Service
     description: Get products
+  - name: Import Service
+    description: Import products
 paths:
-  /health:
-    get:
-      tags:
-        - General
-      summary: "Check App Health"
-      description: "Just run query"
-      operationId: checkHealth
-      responses:
-        "200":
-          description: "Successful operation"
-          content:
-            text/plain:
-              schema:
-                $ref: "#/components/schemas/Health"
   /products:
+    servers:
+      - url: https://1uakb21nm6.execute-api.us-east-1.amazonaws.com/prod
+        description: "PRODUCT SERVICE"
     get:
       tags:
-        - Products
+        - Product Service
       summary: "Get products"
       description: "Get all available products"
       operationId: getProductsList
@@ -52,7 +39,7 @@ paths:
                   $ref: "#/components/schemas/ServerError"
     post:
       tags:
-        - Products
+        - Product Service
       summary: "Create new products"
       description: "Create a new product"
       operationId: createProduct
@@ -62,13 +49,12 @@ paths:
             schema:
               type: object
               example:
-                id: "3316111c-0e1c-4b11-9d72-178b795bf5d1"
                 title: "The new product"
                 description: "The new product description"
                 count: 10
                 price: 5
               items:
-                $ref: "#/components/schemas/Product"
+                $ref: "#/components/schemas/CreateProduct"
       responses:
         "201":
           description: "Created"
@@ -99,9 +85,12 @@ paths:
                 items:
                   $ref: "#/components/schemas/ServerError"
   /products/{productId}:
+    servers:
+      - url: https://1uakb21nm6.execute-api.us-east-1.amazonaws.com/prod
+        description: "PRODUCT SERVICE"
     get:
       tags:
-        - Products
+        - Product Service
       summary: "Get product by id"
       description: "Get product by id"
       operationId: getProductsById
@@ -110,8 +99,8 @@ paths:
           in: path
           description: "Product Id to filter by"
           required: true
-          default: "af4b9141-84c0-41e5-b54e-0b70edb4d4cf"
           schema:
+            default: "af4b9141-84c0-41e5-b54e-0b70edb4d4cf"
             type: string
       responses:
         "200":
@@ -148,6 +137,46 @@ paths:
                   message: "Failed to fetch data"
                 items:
                   $ref: "#/components/schemas/ServerError"
+  /import:
+    servers:
+      - url: https://h0zihypq0i.execute-api.us-east-1.amazonaws.com/prod/
+        description: "IMPORT SERVICE"
+    get:
+      tags:
+        - Import Service
+      summary: "Get signed URL"
+      description: "Get signed URL for using it to upload products csv file"
+      operationId: importProductsFile
+      parameters:
+        - name: name
+          in: query
+          description: "file name that is going to be uploaded"
+          required: true
+          schema:
+            default: "products.csv"
+            type: string
+      responses:
+        "200":
+          description: "Successful operation"
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  url: "https://url"
+                items:
+                  $ref: "#/components/schemas/SignedURL"
+        "500":
+          description: "Server Error"
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: "Failed to fetch data"
+                items:
+                  $ref: "#/components/schemas/ServerError"
+
 components:
   schemas:
     Product:
@@ -170,9 +199,29 @@ components:
         title:
           type: string
           example: "The product"
-    Health:
-      type: string
-      example: "All systems go! 🚀"
+    CreateProduct:
+      type: object
+      properties:
+        price:
+          type: integer
+          format: int64
+          example: 19
+        count:
+          type: integer
+          format: int64
+          example: 1
+        description:
+          type: string
+          example: "The description"
+        title:
+          type: string
+          example: "The product"
+    SignedURL:
+      type: object
+      properties:
+        url:
+          type: string
+          example: "https://url"
     BadRequestError:
       type: object
       properties:

@@ -1,10 +1,15 @@
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import {
+  DynamoDBDocumentClient,
+  TransactWriteCommand,
+} from "@aws-sdk/lib-dynamodb";
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import * as AWS from "aws-sdk";
 import * as crypto from "crypto";
 
-const dynamodb = new AWS.DynamoDB.DocumentClient({
+const dynamoDBCLient = new DynamoDBClient({
   region: "us-east-1",
 });
+const dynamodb = DynamoDBDocumentClient.from(dynamoDBCLient);
 
 exports.handler = async function (
   event: APIGatewayProxyEvent
@@ -12,15 +17,7 @@ exports.handler = async function (
   console.log("Received event:", JSON.stringify(event, null, 2));
 
   const productsTableName = process.env.PRODUCTS_TABLE_NAME || "products";
-  console.log(
-    "🚀 ~ process.env.PRODUCTS_TABLE_NAME:",
-    process.env.PRODUCTS_TABLE_NAME
-  );
   const stocksTableName = process.env.STOCKS_TABLE_NAME || "stocks";
-  console.log(
-    "🚀 ~ process.env.STOCKS_TABLE_NAME:",
-    process.env.STOCKS_TABLE_NAME
-  );
 
   const headers = {
     "Content-Type": "application/json",
@@ -93,8 +90,8 @@ exports.handler = async function (
   };
 
   try {
-    await dynamodb
-      .transactWrite({
+    await dynamodb.send(
+      new TransactWriteCommand({
         TransactItems: [
           {
             Put: {
@@ -110,7 +107,7 @@ exports.handler = async function (
           },
         ],
       })
-      .promise();
+    );
 
     return {
       statusCode: 201,

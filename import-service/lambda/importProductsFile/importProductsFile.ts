@@ -12,7 +12,7 @@ export const handler = async (
   const headers = {
     "Content-Type": "application/json",
     "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "*",
+    "Access-Control-Allow-Methods": "OPTIONS,GET",
   };
 
   const fileName = event.queryStringParameters?.name;
@@ -35,7 +35,7 @@ export const handler = async (
     });
 
     const signedUrl = await getSignedUrl(s3Client, command, {
-      expiresIn: 3600,
+      expiresIn: 300,
     });
 
     return {

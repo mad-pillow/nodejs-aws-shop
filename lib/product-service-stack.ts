@@ -2,9 +2,10 @@ import * as cdk from "aws-cdk-lib";
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import { Construct } from "constructs";
-import { createLambda } from "../product-service/utils/createLambda";
+import path from "path";
+import { createLambda as createLambdaUpdated } from "../utils/createLambda";
 
-export class NodejsAwsShopStack extends cdk.Stack {
+export class ProductServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
@@ -27,22 +28,25 @@ export class NodejsAwsShopStack extends cdk.Stack {
     };
 
     // Create lambdas
-    const getProductsByIdLambda = createLambda(
+    const getProductsByIdLambda = createLambdaUpdated(
       this,
       "GetProductsById",
-      "getProductsById",
+      path.join(__dirname, "../product-service/lambda/getProductsById"),
+      "getProductsById.handler",
       environment
     );
-    const getProductsListLambda = createLambda(
+    const getProductsListLambda = createLambdaUpdated(
       this,
       "GetProductsList",
-      "getProductsList",
+      path.join(__dirname, "../product-service/lambda/getProductsList"),
+      "getProductsList.handler",
       environment
     );
-    const createProductLambda = createLambda(
+    const createProductLambda = createLambdaUpdated(
       this,
       "CreateProduct",
-      "createProduct",
+      path.join(__dirname, "../product-service/lambda/createProduct"),
+      "createProduct.handler",
       environment
     );
 
@@ -63,13 +67,6 @@ export class NodejsAwsShopStack extends cdk.Stack {
         allowHeaders: apigateway.Cors.DEFAULT_HEADERS,
       },
     });
-
-    // health handler with API gateaway integration
-    const healthResource = api.root.addResource("health");
-    const healthIntegration = new apigateway.LambdaIntegration(
-      createLambda(this, "CheckHealth", "checkHealth")
-    );
-    healthResource.addMethod("GET", healthIntegration);
 
     // all products list handler with API gateaway integration
     const productsResource = api.root.addResource("products");

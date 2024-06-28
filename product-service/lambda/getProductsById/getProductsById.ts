@@ -1,25 +1,20 @@
+import { DynamoDBClient, GetItemCommand } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
+import { unmarshall } from "@aws-sdk/util-dynamodb";
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import * as AWS from "aws-sdk";
 
-const dynamodb = new AWS.DynamoDB.DocumentClient({
+const dynamoDBCLient = new DynamoDBClient({
   region: "us-east-1",
 });
+const dynamodb = DynamoDBDocumentClient.from(dynamoDBCLient);
 
 exports.handler = async function (
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> {
   console.log("Received event:", JSON.stringify(event, null, 2));
 
-    const productsTableName = process.env.PRODUCTS_TABLE_NAME || "products";
-    console.log(
-      "🚀 ~ process.env.PRODUCTS_TABLE_NAME:",
-      process.env.PRODUCTS_TABLE_NAME
-    );
-    const stocksTableName = process.env.STOCKS_TABLE_NAME || "stocks";
-    console.log(
-      "🚀 ~ process.env.STOCKS_TABLE_NAME:",
-      process.env.STOCKS_TABLE_NAME
-    );
+  const productsTableName = process.env.PRODUCTS_TABLE_NAME || "products";
+  const stocksTableName = process.env.STOCKS_TABLE_NAME || "stocks";
 
   const headers = {
     "Content-Type": "application/json",
@@ -30,12 +25,12 @@ exports.handler = async function (
   try {
     const productId = event.pathParameters!.productId!;
 
-    const { Item: product } = await dynamodb
-      .get({
-        TableName: productsTableName,
-        Key: { id: productId },
-      })
-      .promise();
+    const getProductCommand = new GetItemCommand({
+      TableName: productsTableName,
+      Key: { id: { S: productId } },
+    });
+
+    const { Item: product } = await dynamodb.send(getProductCommand);
 
     if (!product) {
       return {
@@ -45,16 +40,16 @@ exports.handler = async function (
       };
     }
 
-    const { Item: stock } = await dynamodb
-      .get({
-        TableName: stocksTableName,
-        Key: { product_id: productId },
-      })
-      .promise();
+    const getStockCommand = new GetItemCommand({
+      TableName: stocksTableName,
+      Key: { product_id: { S: productId } },
+    });
+
+    const { Item: stock } = await dynamodb.send(getStockCommand);
 
     const joinedProduct = {
-      ...product,
-      count: stock?.count || 0,
+      ...unmarshall(product),
+      count: stock ? unmarshall(stock).count : 0,
     };
 
     return {
