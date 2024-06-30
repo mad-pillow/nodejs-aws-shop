@@ -60,7 +60,7 @@ export class ProductServiceStack extends cdk.Stack {
     productsTable.grantWriteData(createProductLambda);
 
     // API Gateaway
-    const api = new apigateway.RestApi(this, "Api", {
+    const api = new apigateway.RestApi(this, "ProductServiceApi", {
       defaultCorsPreflightOptions: {
         allowOrigins: apigateway.Cors.ALL_ORIGINS,
         allowMethods: apigateway.Cors.ALL_METHODS,

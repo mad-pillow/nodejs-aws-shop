@@ -10,7 +10,7 @@ tags:
 paths:
   /products:
     servers:
-      - url: https://1uakb21nm6.execute-api.us-east-1.amazonaws.com/prod
+      - url: https://n0p6d4vgq8.execute-api.us-east-1.amazonaws.com/prod/
         description: "PRODUCT SERVICE"
     get:
       tags:
@@ -86,7 +86,7 @@ paths:
                   $ref: "#/components/schemas/ServerError"
   /products/{productId}:
     servers:
-      - url: https://1uakb21nm6.execute-api.us-east-1.amazonaws.com/prod
+      - url: https://n0p6d4vgq8.execute-api.us-east-1.amazonaws.com/prod/
         description: "PRODUCT SERVICE"
     get:
       tags:

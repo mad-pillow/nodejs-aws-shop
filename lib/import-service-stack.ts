@@ -35,7 +35,8 @@ export class ImportServiceStack extends cdk.Stack {
 
     // Grant permissions from the bucket
     uploadFileBucket.grantPut(importProductsFileLambda);
-    uploadFileBucket.grantRead(importFileParserLambda);
+    uploadFileBucket.grantReadWrite(importFileParserLambda);
+    uploadFileBucket.grantDelete(importFileParserLambda);
 
     // API Gateaway
     const api = new apigateway.RestApi(this, "ImportProductsApi", {
