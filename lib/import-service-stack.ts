@@ -2,6 +2,7 @@ import * as cdk from "aws-cdk-lib";
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
 import { S3EventSource } from "aws-cdk-lib/aws-lambda-event-sources";
 import * as s3 from "aws-cdk-lib/aws-s3";
+import * as sqs from "aws-cdk-lib/aws-sqs";
 import { Construct } from "constructs";
 import path from "path";
 import { createLambda } from "../utils/createLambda";
@@ -17,12 +18,24 @@ export class ImportServiceStack extends cdk.Stack {
       "dmytro-sychov-import-service-bucket"
     );
 
+    const catalogItemsQueue = sqs.Queue.fromQueueArn(
+      this,
+      "catalogItemsQueue",
+      "arn:aws:sqs:us-east-1:350262618260:CatalogItemsQueue"
+    );
+
+    // prepare environment variables
+    const environment = {
+      CATALOG_ITEMS_QUEUE_URL: catalogItemsQueue.queueUrl,
+    };
+
     // Create import products file lambda
     const importProductsFileLambda = createLambda(
       this,
       "ImportProductsFile",
       path.join(__dirname, "../import-service/lambda/importProductsFile"),
-      "importProductsFile.handler"
+      "importProductsFile.handler",
+      environment
     );
 
     // Create import file parser lambda
@@ -30,13 +43,17 @@ export class ImportServiceStack extends cdk.Stack {
       this,
       "ImportFileParser",
       path.join(__dirname, "../import-service/lambda/importFileParser"),
-      "importFileParser.handler"
+      "importFileParser.handler",
+      environment
     );
 
     // Grant permissions from the bucket
     uploadFileBucket.grantPut(importProductsFileLambda);
     uploadFileBucket.grantReadWrite(importFileParserLambda);
     uploadFileBucket.grantDelete(importFileParserLambda);
+
+    // Grant permissions to the queue
+    catalogItemsQueue.grantSendMessages(importFileParserLambda);
 
     // API Gateaway
     const api = new apigateway.RestApi(this, "ImportProductsApi", {
