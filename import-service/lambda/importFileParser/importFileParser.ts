@@ -4,11 +4,12 @@ import {
   GetObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
+import { SQSClient, SendMessageBatchCommand } from "@aws-sdk/client-sqs";
 import { S3Event } from "aws-lambda";
+import * as crypto from "crypto";
 import csvParser from "csv-parser";
 import { Readable } from "stream";
-import { SQSClient, SendMessageCommand } from "@aws-sdk/client-sqs";
-import * as crypto from "crypto";
+import { ImportedProduct } from "../../../types";
 
 const s3Client = new S3Client({ region: "us-east-1" });
 const sqsClient = new SQSClient({ region: "us-east-1" });
@@ -48,20 +49,28 @@ export const handler = async (event: S3Event): Promise<void> => {
       const stream = response.Body as Readable;
 
       await new Promise((resolve) => {
+        const products: ImportedProduct[] = [];
+
         stream
           .pipe(csvParser())
-          .on("data", async (data) => {
+          .on("data", (data) => {
             data.id = crypto.randomUUID();
 
-            const sendMessageCommand = new SendMessageCommand({
+            products.push(data);
+          })
+          .on("end", async () => {
+            const sendMessageBatchCommand = new SendMessageBatchCommand({
               QueueUrl: catalogItemsQueueUrl,
-              MessageBody: JSON.stringify(data),
+              Entries: products.map((product) => ({
+                Id: product.id,
+                MessageBody: JSON.stringify(product),
+              })),
             });
 
-            await sqsClient.send(sendMessageCommand);
-          })
-          .on("end", () => {
+            await sqsClient.send(sendMessageBatchCommand);
+
             console.log(`🚀 ~ Finished processing ${objectKey}`);
+
             resolve(true);
           });
       });

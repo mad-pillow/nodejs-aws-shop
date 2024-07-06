@@ -2,6 +2,8 @@ import * as cdk from "aws-cdk-lib";
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import * as lambdaEventSources from "aws-cdk-lib/aws-lambda-event-sources";
+import * as sns from "aws-cdk-lib/aws-sns";
+import * as subscriptions from "aws-cdk-lib/aws-sns-subscriptions";
 import * as sqs from "aws-cdk-lib/aws-sqs";
 import { Construct } from "constructs";
 import path from "path";
@@ -23,14 +25,21 @@ export class ProductServiceStack extends cdk.Stack {
       "stocks"
     );
 
+    // Create SQS Queue for catalog items
     const catalogItemsQueue = new sqs.Queue(this, "CatalogItemsQueue", {
       queueName: "CatalogItemsQueue",
+    });
+
+    // Create SNS Topic for product creation
+    const createProductTopic = new sns.Topic(this, "CreateProductTopic", {
+      topicName: "CreateProductTopic",
     });
 
     // prepare environment variables
     const environment = {
       PRODUCTS_TABLE_NAME: productsTable.tableName,
       STOCKS_TABLE_NAME: stocksTable.tableName,
+      SNS_TOPIC_ARN: createProductTopic.topicArn,
     };
 
     // Create lambdas
@@ -74,6 +83,9 @@ export class ProductServiceStack extends cdk.Stack {
     productsTable.grantWriteData(catalogBatchProcessLambda);
     stocksTable.grantWriteData(catalogBatchProcessLambda);
 
+    // Grant permissions to the topic
+    createProductTopic.grantPublish(catalogBatchProcessLambda);
+
     // API Gateaway
     const api = new apigateway.RestApi(this, "ProductServiceApi", {
       defaultCorsPreflightOptions: {
@@ -108,6 +120,12 @@ export class ProductServiceStack extends cdk.Stack {
       new lambdaEventSources.SqsEventSource(catalogItemsQueue, {
         batchSize: 5,
       })
+    );
+
+    // Email subscription
+    const email = "dmtr.schv@gmail.com";
+    createProductTopic.addSubscription(
+      new subscriptions.EmailSubscription(email)
     );
   }
 }
