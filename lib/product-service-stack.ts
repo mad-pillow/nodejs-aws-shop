@@ -123,9 +123,27 @@ export class ProductServiceStack extends cdk.Stack {
     );
 
     // Email subscription
-    const email = "dmtr.schv@gmail.com";
+    const email = "dmtr.schv+aws@gmail.com";
     createProductTopic.addSubscription(
-      new subscriptions.EmailSubscription(email)
+      new subscriptions.EmailSubscription(email, {
+        filterPolicy: {
+          price: sns.SubscriptionFilter.numericFilter({
+            greaterThanOrEqualTo: 40,
+          }),
+        },
+      })
+    );
+
+    // Second email subscription with a filter policy
+    const filterEmail = "mr.mad.pillow+aws@gmail.com";
+    createProductTopic.addSubscription(
+      new subscriptions.EmailSubscription(filterEmail, {
+        filterPolicy: {
+          price: sns.SubscriptionFilter.numericFilter({
+            lessThan: 5,
+          }),
+        },
+      })
     );
   }
 }

@@ -7,7 +7,7 @@ test("Lambda Functions Created", () => {
   const stack = new ProductServiceStack(app, "NodejsAwsShopTestStack");
   const template = Template.fromStack(stack);
 
-  template.resourceCountIs("AWS::Lambda::Function", 3);
+  template.resourceCountIs("AWS::Lambda::Function", 4);
 
   template.hasResourceProperties("AWS::Lambda::Function", {
     Runtime: "nodejs20.x",
@@ -22,5 +22,10 @@ test("Lambda Functions Created", () => {
   template.hasResourceProperties("AWS::Lambda::Function", {
     Runtime: "nodejs20.x",
     Handler: "createProduct.handler",
+  });
+
+  template.hasResourceProperties("AWS::Lambda::Function", {
+    Runtime: "nodejs20.x",
+    Handler: "catalogBatchProcess.handler",
   });
 });

@@ -12,7 +12,7 @@ const dynamoDBCLient = new DynamoDBClient({
 const dynamodb = DynamoDBDocumentClient.from(dynamoDBCLient);
 const snsClient = new SNSClient({ region: "us-east-1" });
 
-exports.handler = async (event: SQSEvent) => {
+export const handler = async (event: SQSEvent) => {
   console.log("Event: ", JSON.stringify(event, null, 2));
 
   const productsTableName = process.env.PRODUCTS_TABLE_NAME || "products";
@@ -20,8 +20,6 @@ exports.handler = async (event: SQSEvent) => {
   const snsTopicArn =
     process.env.SNS_TOPIC_ARN ||
     "arn:aws:sns:us-east-1:350262618260:CreateProductTopic";
-
-  const products = [];
 
   for (const record of event.Records) {
     const { body } = record;
@@ -54,18 +52,26 @@ exports.handler = async (event: SQSEvent) => {
         })
       );
 
-      products.push({ id, ...rest, count });
+      await snsClient.send(
+        new PublishCommand({
+          TopicArn: snsTopicArn,
+          Message: `New product created: ${JSON.stringify({
+            id,
+            ...rest,
+            count,
+          })}`,
+          MessageAttributes: {
+            price: {
+              DataType: "Number",
+              StringValue: rest.price,
+            },
+          },
+        })
+      );
     } catch (error) {
       console.error("Failed to create a product", error);
     }
   }
-
-  await snsClient.send(
-    new PublishCommand({
-      TopicArn: snsTopicArn,
-      Message: `New products created: ${JSON.stringify(products, null, 2)}`,
-    })
-  );
 
   console.log(`${event.Records.length} records processed.`);
 };
