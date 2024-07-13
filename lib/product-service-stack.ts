@@ -1,9 +1,13 @@
 import * as cdk from "aws-cdk-lib";
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
+import * as lambdaEventSources from "aws-cdk-lib/aws-lambda-event-sources";
+import * as sns from "aws-cdk-lib/aws-sns";
+import * as subscriptions from "aws-cdk-lib/aws-sns-subscriptions";
+import * as sqs from "aws-cdk-lib/aws-sqs";
 import { Construct } from "constructs";
 import path from "path";
-import { createLambda as createLambdaUpdated } from "../utils/createLambda";
+import { createLambda } from "../utils/createLambda";
 
 export class ProductServiceStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -21,32 +25,50 @@ export class ProductServiceStack extends cdk.Stack {
       "stocks"
     );
 
+    // Create SQS Queue for catalog items
+    const catalogItemsQueue = new sqs.Queue(this, "CatalogItemsQueue", {
+      queueName: "CatalogItemsQueue",
+    });
+
+    // Create SNS Topic for product creation
+    const createProductTopic = new sns.Topic(this, "CreateProductTopic", {
+      topicName: "CreateProductTopic",
+    });
+
     // prepare environment variables
     const environment = {
       PRODUCTS_TABLE_NAME: productsTable.tableName,
       STOCKS_TABLE_NAME: stocksTable.tableName,
+      SNS_TOPIC_ARN: createProductTopic.topicArn,
     };
 
     // Create lambdas
-    const getProductsByIdLambda = createLambdaUpdated(
+    const getProductsByIdLambda = createLambda(
       this,
       "GetProductsById",
       path.join(__dirname, "../product-service/lambda/getProductsById"),
       "getProductsById.handler",
       environment
     );
-    const getProductsListLambda = createLambdaUpdated(
+    const getProductsListLambda = createLambda(
       this,
       "GetProductsList",
       path.join(__dirname, "../product-service/lambda/getProductsList"),
       "getProductsList.handler",
       environment
     );
-    const createProductLambda = createLambdaUpdated(
+    const createProductLambda = createLambda(
       this,
       "CreateProduct",
       path.join(__dirname, "../product-service/lambda/createProduct"),
       "createProduct.handler",
+      environment
+    );
+    const catalogBatchProcessLambda = createLambda(
+      this,
+      "CatalogBatchProcess",
+      path.join(__dirname, "../product-service/lambda/catalogBatchProcess"),
+      "catalogBatchProcess.handler",
       environment
     );
 
@@ -58,6 +80,11 @@ export class ProductServiceStack extends cdk.Stack {
 
     // Grant write access to tables
     productsTable.grantWriteData(createProductLambda);
+    productsTable.grantWriteData(catalogBatchProcessLambda);
+    stocksTable.grantWriteData(catalogBatchProcessLambda);
+
+    // Grant permissions to the topic
+    createProductTopic.grantPublish(catalogBatchProcessLambda);
 
     // API Gateaway
     const api = new apigateway.RestApi(this, "ProductServiceApi", {
@@ -87,5 +114,36 @@ export class ProductServiceStack extends cdk.Stack {
       createProductLambda
     );
     productsResource.addMethod("POST", createProductIntegration);
+
+    // event source for the catalogBatchProcess lambda
+    catalogBatchProcessLambda.addEventSource(
+      new lambdaEventSources.SqsEventSource(catalogItemsQueue, {
+        batchSize: 5,
+      })
+    );
+
+    // Email subscription
+    const email = "dmtr.schv+aws@gmail.com";
+    createProductTopic.addSubscription(
+      new subscriptions.EmailSubscription(email, {
+        filterPolicy: {
+          price: sns.SubscriptionFilter.numericFilter({
+            greaterThanOrEqualTo: 40,
+          }),
+        },
+      })
+    );
+
+    // Second email subscription with a filter policy
+    const filterEmail = "mr.mad.pillow+aws@gmail.com";
+    createProductTopic.addSubscription(
+      new subscriptions.EmailSubscription(filterEmail, {
+        filterPolicy: {
+          price: sns.SubscriptionFilter.numericFilter({
+            lessThan: 5,
+          }),
+        },
+      })
+    );
   }
 }
