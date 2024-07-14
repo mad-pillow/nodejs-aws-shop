@@ -72,6 +72,24 @@ export class ImportServiceStack extends cdk.Stack {
       },
     });
 
+    const responseHeaders = {
+      "Access-Control-Allow-Origin": "'*'",
+      "Access-Control-Allow-Headers": "'*'",
+      "Access-Control-Allow-Methods": "'OPTIONS,GET'",
+    };
+
+    api.addGatewayResponse("GatewayResponseUnauthorized", {
+      type: apigateway.ResponseType.UNAUTHORIZED,
+      responseHeaders,
+      statusCode: "401",
+    });
+
+    api.addGatewayResponse("GatewayResponseAccessDenied", {
+      type: apigateway.ResponseType.ACCESS_DENIED,
+      responseHeaders,
+      statusCode: "403",
+    });
+
     // create lambda authorizer
     const basicAuthorizer = new apigateway.TokenAuthorizer(
       this,

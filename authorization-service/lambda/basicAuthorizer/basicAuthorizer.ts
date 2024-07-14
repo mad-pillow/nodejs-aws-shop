@@ -6,13 +6,13 @@ dotenv.config();
 export const handler = async (event: APIGatewayTokenAuthorizerEvent) => {
   console.log("Received event:", JSON.stringify(event, null, 2));
 
-  if (!event.authorizationToken) {
-    throw new Error("Unauthorized");
-  }
-
-  const token = event.authorizationToken.split(" ")[1];
-
   try {
+    if (!event.authorizationToken) {
+      throw new Error("Unauthorized");
+    }
+
+    const token = event.authorizationToken.split(" ")[1];
+
     const buff = Buffer.from(token, "base64");
     const [login, password] = buff.toString("ascii").split(":");
 
@@ -24,16 +24,24 @@ export const handler = async (event: APIGatewayTokenAuthorizerEvent) => {
 
     return generatePolicy(token, "Allow", event.methodArn);
   } catch (error) {
-    console.error("Failed to complete an operation", error);
+    console.error("Failed to complete an operation with:", error);
 
-    return generatePolicy(token, "Deny", event.methodArn);
+    switch ((error as Error).message) {
+      case "Forbidden":
+        return generatePolicy("None", "Deny", event.methodArn, 403);
+      case "Unauthorized":
+        return generatePolicy("None", "Deny", event.methodArn, 401);
+      default:
+        return generatePolicy("None", "Deny", event.methodArn, 500);
+    }
   }
 };
 
 function generatePolicy(
   principalId: string,
   effect: "Allow" | "Deny",
-  resource: string
+  resource: string,
+  statusCode: number = 200
 ) {
   const authResponse: any = {};
 
@@ -53,6 +61,12 @@ function generatePolicy(
 
     authResponse.policyDocument = policyDocument;
   }
+
+  const context = {
+    statusCode,
+  };
+
+  authResponse.context = context;
 
   return authResponse;
 }

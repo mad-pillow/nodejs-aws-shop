@@ -142,6 +142,8 @@ paths:
       - url: https://h0zihypq0i.execute-api.us-east-1.amazonaws.com/prod/
         description: "IMPORT SERVICE"
     get:
+      security:
+        - basicAuth: []
       tags:
         - Import Service
       summary: "Get signed URL"
@@ -166,6 +168,26 @@ paths:
                   url: "https://url"
                 items:
                   $ref: "#/components/schemas/SignedURL"
+        "401":
+          description: "Unauthorized"
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: "Unauthorized"
+                items:
+                  $ref: "#/components/schemas/UnauthorizedError"
+        "403":
+          description: "Forbidden"
+          content:
+            application/json:
+              schema:
+                type: object
+                example:
+                  message: "Forbidden"
+                items:
+                  $ref: "#/components/schemas/ForbiddenError"
         "500":
           description: "Server Error"
           content:
@@ -178,6 +200,11 @@ paths:
                   $ref: "#/components/schemas/ServerError"
 
 components:
+  securitySchemes:
+    basicAuth: # This is the name of the security scheme
+      type: http
+      scheme: basic
+      description: "HTTP Basic Authentication. Works over HTTPS only."
   schemas:
     Product:
       type: object
@@ -234,6 +261,18 @@ components:
         message:
           type: string
           example: "Not Found Error"
+    UnauthorizedError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Unauthorized Error"
+    ForbiddenError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Forbidden Error"
     ServerError:
       type: object
       properties:
